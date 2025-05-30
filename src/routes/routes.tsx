@@ -1,5 +1,6 @@
 import App from "@/App";
 import Message from "@/components/message";
+import LoginPage from "@/pages/login";
 import { createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -12,6 +13,10 @@ const router = createBrowserRouter([
         element: <Message />,
       },
     ],
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
   },
 ]);
 

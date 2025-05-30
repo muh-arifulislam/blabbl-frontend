@@ -21,7 +21,7 @@ import {
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -152,9 +152,13 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
+    <Sidebar
+      collapsible="offcanvas"
+      {...props}
+      className="bg-white border-r-2 border-slate-100"
+    >
+      <SidebarHeader className="bg-white">
+        <SidebarMenu className="bg-white">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -168,7 +172,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-white">
         <NavMain items={data.navMain} />
         <NavDocuments items={data.documents} />
       </SidebarContent>

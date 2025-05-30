@@ -2,6 +2,7 @@
 
 import {
   FolderIcon,
+  MessageCircle,
   MoreHorizontalIcon,
   ShareIcon,
   type LucideIcon,
@@ -36,49 +37,37 @@ export function NavDocuments({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Pinned Chat</SidebarGroupLabel>
+      <SidebarGroupLabel className="space-x-1">
+        <MessageCircle absoluteStrokeWidth />
+        <span>All Messages</span>
+      </SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem className="min-h-10" key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+              <a href={"#"} className="inline-block w-full h-full">
+                <div className="flex items-center gap-x-2">
+                  <img
+                    className="w-10 h-10 rounded-full overflow-hidden"
+                    src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-medium">Grace Miller</h2>
+                      <p className="text-slate-600">10:30AM</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p>Typing...</p>
+                      <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
+                        2
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </a>
             </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction
-                  showOnHover
-                  className="rounded-sm data-[state=open]:bg-accent"
-                >
-                  <MoreHorizontalIcon />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-24 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <FolderIcon />
-                  <span>Open</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ShareIcon />
-                  <span>Share</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </SidebarMenuItem>
         ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
   );
