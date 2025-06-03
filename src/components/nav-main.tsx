@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon, Search, type LucideIcon } from "lucide-react";
+import { PlusIcon, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,15 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Input } from "./ui/input";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-  }[];
-}) {
+export function NavMain() {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
