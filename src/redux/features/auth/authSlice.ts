@@ -5,8 +5,6 @@ export type TUser = {
   email: string;
   name: string;
   picture: string;
-  iat: number;
-  exp: number;
 };
 
 type TAuthState = {
@@ -25,7 +23,17 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action) => {
+    setUser: (
+      state,
+      action: {
+        payload: {
+          user: TUser;
+          token: string;
+          auth0_id: string;
+        };
+        type: string;
+      }
+    ) => {
       const { user, token, auth0_id } = action.payload;
       state.token = token;
       state.user = user;
@@ -45,3 +53,4 @@ export default authSlice.reducer;
 
 export const selectCurrentToken = (state: RootState) => state.auth.token;
 export const selectCurrentUser = (state: RootState) => state.auth.user;
+export const selectCurrentAuthOId = (state: RootState) => state.auth.auth0_id;

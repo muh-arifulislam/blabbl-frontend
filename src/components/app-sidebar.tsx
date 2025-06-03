@@ -29,53 +29,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth0 } from "@auth0/auth0-react";
-import React, { useEffect } from "react";
+
+import React from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
-  const [userMetadata, setUserMetadata] = React.useState<null | {
-    name: string;
-    avatar: string;
-    email: string;
-  }>(null);
-
-  useEffect(() => {
-    const getUserMetadata = async () => {
-      try {
-        const accessToken = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: `https://${import.meta.env.VITE_AUTH0_DOMAIN}/api/v2/`,
-            scope: "read:current_user",
-          },
-        });
-
-        const userDetailsByIdUrl = `https://${
-          import.meta.env.VITE_AUTH0_DOMAIN
-        }/api/v2/users/${user?.sub}`;
-
-        const metadataResponse = await fetch(userDetailsByIdUrl, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        const resData = await metadataResponse.json();
-
-        setUserMetadata({
-          name: resData?.name,
-          email: resData?.email,
-          avatar: resData?.picture,
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    };
-
-    if (user?.sub && isAuthenticated) {
-      getUserMetadata();
-    }
-  }, [getAccessTokenSilently, user?.sub]);
+  const user = useAppSelector(selectCurrentUser);
 
   return (
     <Sidebar
@@ -102,9 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain />
         <NavDocuments />
       </SidebarContent>
-      <SidebarFooter>
-        {userMetadata && <NavUser user={userMetadata} />}
-      </SidebarFooter>
+      <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
     </Sidebar>
   );
 }

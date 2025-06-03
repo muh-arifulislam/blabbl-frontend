@@ -4,35 +4,54 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { SidebarInset } from "../ui/sidebar";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import socket from "@/lib/socket";
 import UserMessage from "./UserMessage";
 import RecipientMessage from "./RecipientMessage";
+import { useAppSelector } from "@/redux/hooks";
+import {
+  selectCurrentAuthOId,
+  selectCurrentUser,
+} from "@/redux/features/auth/authSlice";
+import { useGetUserMessagesQuery } from "@/redux/features/message/messageApi";
+import { useGetRecipientQuery } from "@/redux/features/user/userApi";
+import { TMessage } from "@/types";
 
 const ChatWindow = () => {
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
+
   const { id } = useParams();
-  const userId = JSON.parse(localStorage.getItem("auth0Id") ?? "");
+  const userId = useAppSelector(selectCurrentAuthOId);
+  const user = useAppSelector(selectCurrentUser);
   const recipientId = "google-oauth2|".concat(id ?? "");
 
-  const [messages, setMessages] = useState<
-    { from: string; to: string; content: string }[]
-  >([]);
+  const { data: recipient } = useGetRecipientQuery(recipientId);
+
+  const { data: chatHistory } = useGetUserMessagesQuery({
+    from: userId as string,
+    to: recipientId,
+  });
+
+  const [messages, setMessages] = useState<TMessage[]>([]);
   const [input, setInput] = useState("");
+
   const [typing, setTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isRecipientTyping, setIsRecipientTyping] = useState(false);
-  console.log(isRecipientTyping);
+
   useEffect(() => {
     socket.emit("join", userId);
+
+    if (chatHistory?.data?.length > 0) setMessages(chatHistory.data);
 
     socket.on("receive-message", (message) => {
       if (message.from === recipientId || message.to === recipientId) {
         setMessages((prev) => [...prev, message]);
         // showNotification(message);
-        playNotification();
+        // playNotification();
       }
     });
 
@@ -44,12 +63,21 @@ const ChatWindow = () => {
       if (from === recipientId) setIsRecipientTyping(false);
     });
 
+    socket.on("message-delivered", ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, delivered: true } : msg
+        )
+      );
+    });
+
     return () => {
       socket.off("receive-message");
       socket.off("typing");
       socket.off("stop-typing");
+      socket.off("message-delivered");
     };
-  }, [userId, recipientId]);
+  }, [userId, recipientId, chatHistory]);
 
   // const showNotification = (message: { from: string; content: string }) => {
   //   if (document.hidden && Notification.permission === "granted") {
@@ -60,15 +88,20 @@ const ChatWindow = () => {
   // };
 
   //pop alert when a new message is received
-  const playNotification = () => {
-    const audio = new Audio("/message-pop-alert.mp3");
-    audio.play().catch(() => {});
-  };
+  // const playNotification = () => {
+  //   const audio = new Audio("/message-pop-alert.mp3");
+  //   audio.play().catch(() => {});
+  // };
 
   const sendMessage = () => {
-    if (!input.trim()) return; // Prevent sending empty messages
+    if (!input.trim() || !userId || !recipientId) return; // Prevent sending empty messages or if IDs are missing
 
-    const msg = { from: userId, to: recipientId, content: input };
+    const msg = {
+      from: userId,
+      to: recipientId,
+      content: input,
+      createdAt: new Date().toDateString(),
+    };
     socket.emit("send-message", msg);
     setMessages((prev) => [...prev, msg]);
     setInput("");
@@ -91,16 +124,57 @@ const ChatWindow = () => {
     );
   };
 
+  const hasAutoScrolled = useRef(false);
+
   // useEffect(() => {
   //   if (Notification.permission !== "granted") {
   //     Notification.requestPermission();
   //   }
   // }, []);
 
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    const unreadIds = messages
+      .filter((msg) => msg.from === recipientId && !msg.read)
+      .map((msg) => msg._id);
+
+    if (unreadIds.length > 0) {
+      socket.emit("mark-as-read", { messageIds: unreadIds });
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          unreadIds.includes(msg._id) ? { ...msg, read: true } : msg
+        )
+      );
+    }
+  }, [messages, recipientId]);
+
+  useLayoutEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
+    if (!messages.length) return;
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length && !hasAutoScrolled.current) {
+      // Wait for DOM render
+      requestAnimationFrame(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: "auto" });
+        hasAutoScrolled.current = true;
+      });
+    }
+  }, [messages]);
+
   return (
     <>
       <div>
-        <SiteHeader />
+        <SiteHeader recipient={recipient?.data} />
       </div>
       <div className="flex-1 flex overflow-hidden">
         <SidebarInset className="flex flex-col w-full">
@@ -114,32 +188,24 @@ const ChatWindow = () => {
                 msg.from === userId ? (
                   <UserMessage
                     key={i}
-                    name="You"
-                    avatar="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
-                    time={"12:34 PM"}
-                    content={msg.content}
+                    data={msg}
+                    picture={user?.picture ?? ""}
                   />
                 ) : (
                   <RecipientMessage
                     key={i}
-                    name="Grace Miller"
-                    avatar="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
-                    time={"12:34 PM"}
-                    content={msg.content}
+                    name={recipient?.data?.name ?? "Recipient"}
+                    data={msg}
+                    picture={
+                      recipient?.data?.picture ??
+                      "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                    }
                   />
                 )
               )}
 
-              {/* ...more messages... */}
-
-              {/* {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={m.from === userId ? "text-right" : "text-left"}
-                >
-                  <p>{m.content}</p>
-                </div>
-              ))} */}
+              {isRecipientTyping && <p>Typing...</p>}
+              <div ref={messageEndRef} />
             </main>
 
             {/* Bottom Bar - fixed at bottom */}
