@@ -5,6 +5,7 @@ import ChatWindow from "@/components/Chat/ChatWindow";
 import AuthProtected from "@/middlewares/AuthProtected";
 import LoginPage from "@/pages/login";
 import AuthCallback from "@/auth/AuthCallback";
+import NoChatSelected from "@/components/ui/NoChatSelected";
 
 const router = createBrowserRouter([
   {
@@ -16,8 +17,13 @@ const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
+        element: <NoChatSelected />,
+      },
+
+      {
         path: "messages",
-        element: <>nothing found</>,
+        element: <NoChatSelected />,
       },
       {
         path: "messages/:id",
