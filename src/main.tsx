@@ -4,7 +4,12 @@ import "./index.css";
 import router from "./routes/routes.tsx";
 import { RouterProvider } from "react-router-dom";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { Provider } from "react-redux";
+import store from "./redux/store.ts";
+import { persistor } from "./redux/store.ts";
+import { PersistGate } from "redux-persist/integration/react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onRedirectCallback = (appState: any) => {
   window.history.replaceState(
     {},
@@ -27,7 +32,11 @@ createRoot(document.getElementById("root")!).render(
     onRedirectCallback={onRedirectCallback}
   >
     <StrictMode>
-      <RouterProvider router={router} />
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <RouterProvider router={router} />
+        </PersistGate>
+      </Provider>
     </StrictMode>
   </Auth0Provider>
 );
