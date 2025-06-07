@@ -23,39 +23,15 @@ import {
   SidebarMenuItem,
   // useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useFetchFriendsQuery } from "@/redux/features/user/userApi";
 
 export function NavDocuments() {
   // const { isMobile } = useSidebar();
 
-  const { user, isLoading } = useAuth0();
+  const { data, isLoading, isFetching } = useFetchFriendsQuery(undefined);
 
-  const [friends, setFriends] = useState([]);
-
-  useEffect(() => {
-    const fetchFriends = async () => {
-      if (!user) return;
-      try {
-        const response = await fetch(
-          `https://blabbl.onrender.com/api/users/${user.sub}/friends`
-        );
-        if (!response.ok) throw new Error("Failed to fetch friends");
-        const data = await response.json();
-        // You can set state here if needed, e.g. setFriends(friends);
-        // console.log("Fetched friends:", data.data);
-
-        setFriends(data.data);
-      } catch (error) {
-        console.error("Error fetching friends:", error);
-      }
-    };
-
-    fetchFriends();
-  }, []);
-
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <div>Loading...</div>;
   }
 
@@ -66,7 +42,7 @@ export function NavDocuments() {
         <span>All Messages</span>
       </SidebarGroupLabel>
       <SidebarMenu>
-        {friends.map(
+        {data?.data?.map(
           (friend: {
             auth0_id: string;
             _id: string;

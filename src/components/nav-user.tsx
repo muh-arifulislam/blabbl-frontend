@@ -25,6 +25,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
 
 export function NavUser({
   user,
@@ -37,7 +39,9 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
 
-  const { logout, user: userData, isLoading } = useAuth0();
+  const { logout: auth0Logout, user: userData, isLoading } = useAuth0();
+
+  const dispatch = useAppDispatch();
 
   if (isLoading) {
     return <div>loading...</div>;
@@ -105,10 +109,10 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                logout({
+                dispatch(logout());
+                auth0Logout({
                   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
                 });
-                localStorage.removeItem("auth0Id");
               }}
             >
               <LogOutIcon />

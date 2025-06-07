@@ -4,6 +4,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { setUser } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { useSyncUserMutation } from "@/redux/features/user/userApi";
 
 export default function AuthCallback() {
   const { isAuthenticated, isLoading, user, getAccessTokenSilently } =
@@ -12,6 +13,8 @@ export default function AuthCallback() {
   const location = useLocation();
 
   const dispatch = useAppDispatch();
+
+  const [handleSyncUser] = useSyncUserMutation();
 
   const getUserMetadata = async () => {
     try {
@@ -34,7 +37,7 @@ export default function AuthCallback() {
 
       const resData = await metadataResponse.json();
 
-      return resData;
+      return { data: resData, accessToken };
     } catch (e) {
       console.log(e);
     }
@@ -45,9 +48,13 @@ export default function AuthCallback() {
       if (!isLoading && isAuthenticated && user) {
         // ✅ Cache user
 
-        const data = await getUserMetadata();
-
-        console.log(data);
+        const metadata = await getUserMetadata();
+        if (!metadata) {
+          // Handle error or return early if metadata is undefined
+          return;
+        }
+        const { data, accessToken } = metadata;
+        // ✅ Dispatch user data to Redux store
         if (data?.email) {
           dispatch(
             setUser({
@@ -56,10 +63,17 @@ export default function AuthCallback() {
                 email: data?.email,
                 picture: data?.picture,
               },
-              token: "access_token",
+              token: accessToken,
               auth0_id: user.sub as string,
             })
           );
+
+          await handleSyncUser({
+            auth0_id: user.sub as string,
+            name: data?.name,
+            email: data?.email,
+            picture: data?.picture,
+          });
         }
 
         // ✅ Redirect to original page if available

@@ -11,15 +11,15 @@ import { RootState } from "../store";
 
 import { toast } from "sonner";
 
-//http://localhost:5000/api/v1
+//http://localhost:5000/api
 // https://server.10fix.com.bd/api/v1
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://blabbl.onrender.com/api",
+  baseUrl: "http://localhost:5000/api",
   credentials: "omit",
   prepareHeaders: (headers: Headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) {
-      headers.set("Authorization", token as string);
+      headers.set("Authorization", `Bearer ${token}`);
     }
     return headers;
   },
@@ -44,6 +44,12 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithRefreshToken,
-  tagTypes: ["user", "friends", "notification", "messages"],
+  tagTypes: [
+    "user",
+    "friends",
+    "notification",
+    "messages",
+    "user-friend-requests",
+  ],
   endpoints: () => ({}),
 });

@@ -1,15 +1,42 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { EllipsisVertical, Phone, Video } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { useUnfriendMutation } from "@/redux/features/user/userApi";
+import { useNavigate } from "react-router-dom";
 
 type PropsType = {
   recipient: {
     name: string;
     picture: string;
+    _id: string;
   };
 };
 
 export function SiteHeader({ recipient }: PropsType) {
+  const navigate = useNavigate();
+
+  const [unfriend] = useUnfriendMutation();
+
+  const handleUnfriend = async (friendId: string) => {
+    try {
+      const res = await unfriend(friendId);
+
+      if ("data" in res && res.data?.success) {
+        navigate("/messages");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear bg-white">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
@@ -36,15 +63,21 @@ export function SiteHeader({ recipient }: PropsType) {
         </div>
       </div>
       <div className="flex items-center gap-6 pr-6">
-        <button>
-          <Phone />
-        </button>
-        <button>
-          <Video />
-        </button>
-        <button>
-          <EllipsisVertical />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <EllipsisVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleUnfriend(recipient._id)}>
+              Unfriend
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
