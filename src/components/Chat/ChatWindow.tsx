@@ -14,8 +14,12 @@ import {
   selectCurrentUser,
 } from "@/redux/features/auth/authSlice";
 import { useGetUserMessagesQuery } from "@/redux/features/message/messageApi";
-import { useGetRecipientQuery } from "@/redux/features/user/userApi";
+import {
+  useFetchFriendsQuery,
+  useGetRecipientQuery,
+} from "@/redux/features/user/userApi";
 import { TMessage } from "@/types";
+import NotConnectedMessage from "../NotConnectedMessage";
 
 const ChatWindow = () => {
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -126,11 +130,11 @@ const ChatWindow = () => {
 
   const hasAutoScrolled = useRef(false);
 
-  // useEffect(() => {
-  //   if (Notification.permission !== "granted") {
-  //     Notification.requestPermission();
-  //   }
-  // }, []);
+  const { data } = useFetchFriendsQuery(undefined);
+
+  const isFriend = (id: string) => {
+    return data?.data?.includes([id]);
+  };
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -205,12 +209,23 @@ const ChatWindow = () => {
               )}
 
               {isRecipientTyping && <p>Typing...</p>}
+
+              <div>
+                {/* {!isFriend(id as string)  && (
+                  <NotConnectedMessage recipient={recipient?.data} />
+                )} */}
+                {!isFriend(id as string) && recipient?.data && (
+                  <NotConnectedMessage recipient={recipient?.data} />
+                )}
+              </div>
+
               <div ref={messageEndRef} />
             </main>
 
             {/* Bottom Bar - fixed at bottom */}
             <div className="h-16 border-t border-gray-200 flex items-center px-4 bg-white gap-2 shrink-0">
               <Input
+                disabled={!isFriend(recipient?._id)}
                 value={input}
                 onChange={handleTyping}
                 onKeyDown={(e) => {
@@ -224,7 +239,12 @@ const ChatWindow = () => {
               />
               <Mic absoluteStrokeWidth />
               <Paperclip absoluteStrokeWidth />
-              <Button onClick={sendMessage}>Send</Button>
+              <Button
+                disabled={!isFriend(recipient?._id)}
+                onClick={sendMessage}
+              >
+                Send
+              </Button>
             </div>
           </div>
         </SidebarInset>

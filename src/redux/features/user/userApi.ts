@@ -24,14 +24,6 @@ const userApi = baseApi.injectEndpoints({
       }),
     }),
 
-    sendFriendRequest: builder.mutation({
-      query: (userAuth0Id: string) => ({
-        url: `/users/${userAuth0Id}/sent-friend-request`,
-        method: "POST",
-      }),
-      invalidatesTags: ["user-friend-requests"],
-    }),
-
     fetchUserFriendRequests: builder.query({
       query: () => ({
         url: `/users/user-friend-requests`,
@@ -48,36 +40,44 @@ const userApi = baseApi.injectEndpoints({
       providesTags: ["friends"],
     }),
 
-    acceptFriendRequest: builder.mutation({
-      query: (userId: string) => ({
-        url: `/users/${userId}/accept-friend-request`,
+    unfriend: builder.mutation({
+      query: (friendAuth0Id: string) => ({
+        url: `/users/${friendAuth0Id}/unfriend`,
         method: "POST",
       }),
-      invalidatesTags: ["user-friend-requests"],
+      invalidatesTags: ["friends", "user-friend-requests"],
     }),
 
-    deleteFriendRequest: builder.mutation({
-      query: (userAuth0Id: string) => ({
-        url: `/users/${userAuth0Id}/sent-friend-request`,
+    sendFriendRequest: builder.mutation({
+      query: (receiverAuth0Id: string) => ({
+        url: `/users/${receiverAuth0Id}/sent-friend-request`,
         method: "POST",
       }),
       invalidatesTags: ["user-friend-requests"],
     }),
 
     cancelFriendRequest: builder.mutation({
-      query: (userAuth0Id: string) => ({
-        url: `/users/${userAuth0Id}/sent-friend-request`,
+      query: (receiverAuth0Id: string) => ({
+        url: `/users/${receiverAuth0Id}/cancel-friend-request`,
         method: "POST",
       }),
       invalidatesTags: ["user-friend-requests"],
     }),
 
-    unfriend: builder.mutation({
-      query: (friendId: string) => ({
-        url: `/users/${friendId}/unfriend`,
+    acceptFriendRequest: builder.mutation({
+      query: (senderAuth0Id: string) => ({
+        url: `/users/${senderAuth0Id}/accept-friend-request`,
         method: "POST",
       }),
-      invalidatesTags: ["friends", "user-friend-requests"],
+      invalidatesTags: ["user-friend-requests"],
+    }),
+
+    deleteFriendRequest: builder.mutation({
+      query: (senderAuth0Id: string) => ({
+        url: `/users/${senderAuth0Id}/delete-friend-request`,
+        method: "POST",
+      }),
+      invalidatesTags: ["user-friend-requests"],
     }),
   }),
 });

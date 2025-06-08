@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/popover";
 import {
   useAcceptFriendRequestMutation,
-  useFetchUserFriendRequestsQuery,
+  useCancelFriendRequestMutation,
+  useDeleteFriendRequestMutation,
   useSearchUsersQuery,
   useSendFriendRequestMutation,
 } from "@/redux/features/user/userApi";
@@ -26,6 +27,8 @@ import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { useAppSelector } from "@/redux/hooks";
 import { selectCurrentAuthOId } from "@/redux/features/auth/authSlice";
+import { IUser } from "@/types/user";
+import useRequestHelper from "@/hooks/useRequestHelper";
 
 export function SearchAutocomplete() {
   const [open, setOpen] = useState(false);
@@ -38,17 +41,40 @@ export function SearchAutocomplete() {
 
   const userAuth0Id = useAppSelector(selectCurrentAuthOId);
 
-  const [sendFriendRequest] = useSendFriendRequestMutation();
-
   // Fetch user friend requests to check if the request has already been sent
-  const [sentRequestsIds, setSentRequestsIds] = useState<string[]>([]);
-  const [receivedRequestsIds, setReceivedRequestsIds] = useState<string[]>([]);
+  const { sentRequestsIds, receivedRequestsIds } = useRequestHelper();
+
+  const [sendFriendRequest] = useSendFriendRequestMutation();
+  const handleSendFriendRequest = async (receiverAuth0Id: string) => {
+    try {
+      await sendFriendRequest(receiverAuth0Id);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [cancelFriendRequest] = useCancelFriendRequestMutation();
+  const handleCancelFriendRequest = async (receiverAuth0Id: string) => {
+    try {
+      await cancelFriendRequest(receiverAuth0Id);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const [acceptFriendRequest] = useAcceptFriendRequestMutation();
-
-  const handleAcceptFriendRequest = async (senderId: string) => {
+  const handleAcceptFriendRequest = async (senderAuth0Id: string) => {
     try {
-      await acceptFriendRequest(senderId);
+      await acceptFriendRequest(senderAuth0Id);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [deleteFriendRequest] = useDeleteFriendRequestMutation();
+  const handleDeleteFriendRequest = async (senderAuth0Id: string) => {
+    try {
+      await deleteFriendRequest(senderAuth0Id);
     } catch (err) {
       console.log(err);
     }
@@ -62,38 +88,13 @@ export function SearchAutocomplete() {
     return receivedRequestsIds.includes(id);
   };
 
-  const { data: userFriendRequestsData } =
-    useFetchUserFriendRequestsQuery(undefined);
-
-  useEffect(() => {
-    if (userFriendRequestsData?.success) {
-      const idsArrayOfSentRequests = userFriendRequestsData?.data?.sent?.map(
-        (item) => item._id
-      );
-
-      const idsArrayofReceivedRequests =
-        userFriendRequestsData?.data?.received?.map((item) => item._id);
-
-      setSentRequestsIds(idsArrayOfSentRequests);
-      setReceivedRequestsIds(idsArrayofReceivedRequests);
-    }
-  }, [userFriendRequestsData]);
-
-  const handleSendFriendRequest = async (userAuth0Id: string) => {
-    try {
-      await sendFriendRequest(userAuth0Id);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   // Update suggestions when data changes
   useEffect(() => {
     if (isError) {
       setSuggestions([]);
     } else {
       const filteredData = data?.data?.filter(
-        (item) => item?.auth0_id !== userAuth0Id
+        (item: IUser) => item?.auth0_id !== userAuth0Id
       );
       setSuggestions(filteredData);
     }
@@ -158,21 +159,33 @@ export function SearchAutocomplete() {
                         </div>
                         <div className="space-x-3">
                           {isSent(item._id) ? (
-                            <Button size="sm" variant="destructive">
+                            <Button
+                              onClick={() =>
+                                handleCancelFriendRequest(item.auth0_id)
+                              }
+                              size="sm"
+                              variant="destructive"
+                            >
                               Cancel
                             </Button>
                           ) : isReceived(item._id) ? (
                             <>
                               <Button
                                 onClick={() =>
-                                  handleAcceptFriendRequest(item._id)
+                                  handleAcceptFriendRequest(item.auth0_id)
                                 }
                                 size="sm"
                                 variant="default"
                               >
                                 Confirm
                               </Button>
-                              <Button size="sm" variant="destructive">
+                              <Button
+                                onClick={() =>
+                                  handleDeleteFriendRequest(item.auth0_id)
+                                }
+                                size="sm"
+                                variant="destructive"
+                              >
                                 Delete
                               </Button>
                             </>

@@ -9,7 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { useUnfriendMutation } from "@/redux/features/user/userApi";
+import {
+  useFetchFriendsQuery,
+  useUnfriendMutation,
+} from "@/redux/features/user/userApi";
 import { useNavigate } from "react-router-dom";
 
 type PropsType = {
@@ -17,6 +20,7 @@ type PropsType = {
     name: string;
     picture: string;
     _id: string;
+    auth0_id: string;
   };
 };
 
@@ -25,9 +29,9 @@ export function SiteHeader({ recipient }: PropsType) {
 
   const [unfriend] = useUnfriendMutation();
 
-  const handleUnfriend = async (friendId: string) => {
+  const handleUnfriend = async (friendAuth0Id: string) => {
     try {
-      const res = await unfriend(friendId);
+      const res = await unfriend(friendAuth0Id);
 
       if ("data" in res && res.data?.success) {
         navigate("/messages");
@@ -35,6 +39,12 @@ export function SiteHeader({ recipient }: PropsType) {
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const { data } = useFetchFriendsQuery(undefined);
+
+  const isFriend = (id: string) => {
+    return data?.data?.includes([id]);
   };
 
   return (
@@ -73,7 +83,10 @@ export function SiteHeader({ recipient }: PropsType) {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleUnfriend(recipient._id)}>
+            <DropdownMenuItem
+              disabled={!isFriend(recipient?._id)}
+              onClick={() => handleUnfriend(recipient.auth0_id)}
+            >
               Unfriend
             </DropdownMenuItem>
           </DropdownMenuContent>

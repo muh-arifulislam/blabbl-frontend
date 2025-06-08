@@ -11,12 +11,45 @@ import { Label } from "@/components/ui/label";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { SearchAutocomplete } from "./SearchAutoComplete";
-import { useFetchUserFriendRequestsQuery } from "@/redux/features/user/userApi";
+import {
+  useAcceptFriendRequestMutation,
+  useCancelFriendRequestMutation,
+  useDeleteFriendRequestMutation,
+  useFetchUserFriendRequestsQuery,
+} from "@/redux/features/user/userApi";
+import { IUser } from "@/types/user";
 
 const AddFriendDialog = () => {
   const [tab, setTab] = useState<"incoming" | "sent">("incoming");
 
   const { data } = useFetchUserFriendRequestsQuery(undefined);
+
+  const [cancelFriendRequest] = useCancelFriendRequestMutation();
+  const handleCancelFriendRequest = async (receiverId: string) => {
+    try {
+      await cancelFriendRequest(receiverId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [acceptFriendRequest] = useAcceptFriendRequestMutation();
+  const handleAcceptFriendRequest = async (senderId: string) => {
+    try {
+      await acceptFriendRequest(senderId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const [deleteFriendRequest] = useDeleteFriendRequestMutation();
+  const handleDeleteFriendRequest = async (senderId: string) => {
+    try {
+      await deleteFriendRequest(senderId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Dialog>
@@ -108,7 +141,7 @@ const AddFriendDialog = () => {
                     // Incoming Requests List
                     <>
                       {/* {incomingRequests.length > 0 ? incomingRequests.map(req => ( */}
-                      {data?.data?.received?.map((req) => (
+                      {data?.data?.received?.map((req: IUser) => (
                         <div
                           key={req._id}
                           className="flex items-center justify-between"
@@ -125,10 +158,22 @@ const AddFriendDialog = () => {
                             <h2 className="font-semibold">{req?.name}</h2>
                           </div>
                           <div className="space-x-3">
-                            <Button size="sm" variant="default">
+                            <Button
+                              onClick={() =>
+                                handleAcceptFriendRequest(req.auth0_id)
+                              }
+                              size="sm"
+                              variant="default"
+                            >
                               Confirm
                             </Button>
-                            <Button size="sm" variant="destructive">
+                            <Button
+                              onClick={() =>
+                                handleDeleteFriendRequest(req.auth0_id)
+                              }
+                              size="sm"
+                              variant="destructive"
+                            >
                               Delete
                             </Button>
                           </div>
@@ -142,7 +187,7 @@ const AddFriendDialog = () => {
                     // Sent Requests List
                     <>
                       {/* {sentRequests.length > 0 ? sentRequests.map(req => ( */}
-                      {data?.data?.sent?.map((req) => (
+                      {data?.data?.sent?.map((req: IUser) => (
                         <div
                           key={req._id}
                           className="flex flex-col sm:flex-row items-center justify-between w-full bg-slate-200 p-3 rounded-md gap-2"
@@ -162,14 +207,14 @@ const AddFriendDialog = () => {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => {
-                                console.log("cancel request");
-                              }}
+                              onClick={() =>
+                                handleCancelFriendRequest(req.auth0_id)
+                              }
                             >
                               Cancel
                             </Button>
                             <Button size="sm" variant="default" disabled>
-                              Requst Sent
+                              Request Sent
                             </Button>
                           </div>
                         </div>
