@@ -9,11 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import {
-  useFetchFriendsQuery,
-  useUnfriendMutation,
-} from "@/redux/features/user/userApi";
+import { useUnfriendMutation } from "@/redux/features/user/userApi";
 import { useNavigate } from "react-router-dom";
+import useRequestHelper from "@/hooks/useRequestHelper";
 
 type PropsType = {
   recipient: {
@@ -41,11 +39,7 @@ export function SiteHeader({ recipient }: PropsType) {
     }
   };
 
-  const { data } = useFetchFriendsQuery(undefined);
-
-  const isFriend = (id: string) => {
-    return data?.data?.includes([id]);
-  };
+  const { friendsIds } = useRequestHelper();
 
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear bg-white">
@@ -84,7 +78,7 @@ export function SiteHeader({ recipient }: PropsType) {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              disabled={!isFriend(recipient?._id)}
+              disabled={!friendsIds.includes(recipient._id)}
               onClick={() => handleUnfriend(recipient.auth0_id)}
             >
               Unfriend

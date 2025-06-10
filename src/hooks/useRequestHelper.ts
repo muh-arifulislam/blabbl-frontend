@@ -1,4 +1,7 @@
-import { useFetchUserFriendRequestsQuery } from "@/redux/features/user/userApi";
+import {
+  useFetchFriendsQuery,
+  useFetchUserFriendRequestsQuery,
+} from "@/redux/features/user/userApi";
 import { IUser } from "@/types/user";
 import { useEffect, useState } from "react";
 
@@ -6,9 +9,12 @@ const useRequestHelper = () => {
   // Fetch user friend requests to check if the request has already been sent
   const [sentRequestsIds, setSentRequestsIds] = useState<string[]>([]);
   const [receivedRequestsIds, setReceivedRequestsIds] = useState<string[]>([]);
+  const [friendsIds, setFriendsIds] = useState<string[]>([]);
 
-  const { data: userFriendRequestsData } =
+  const { data: userFriendRequestsData, isLoading } =
     useFetchUserFriendRequestsQuery(undefined);
+
+  const { data: userFriends } = useFetchFriendsQuery(undefined);
 
   useEffect(() => {
     if (userFriendRequestsData?.success) {
@@ -22,9 +28,13 @@ const useRequestHelper = () => {
       setSentRequestsIds(idsArrayOfSentRequests);
       setReceivedRequestsIds(idsArrayofReceivedRequests);
     }
-  }, [userFriendRequestsData]);
+    if (userFriends?.success && userFriends?.data?.length > 0) {
+      const friendsIds = userFriends.data.map((friend: IUser) => friend._id);
+      setFriendsIds(friendsIds);
+    }
+  }, [userFriendRequestsData, userFriends]);
 
-  return { sentRequestsIds, receivedRequestsIds };
+  return { sentRequestsIds, receivedRequestsIds, friendsIds, isLoading };
 };
 
 export default useRequestHelper;

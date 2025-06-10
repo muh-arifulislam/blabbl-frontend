@@ -8,14 +8,16 @@ import {
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
-
 import { toast } from "sonner";
 
+import { logout as clearAuth } from "../features/auth/authSlice";
+import { auth0Logout } from "@/utils/auth0Logout";
+
 //http://localhost:5000/api
-// https://server.10fix.com.bd/api/v1
+// https://blabbl.onrender.com/api
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:5000/api",
-  credentials: "omit",
+  baseUrl: "https://blabbl.onrender.com/api",
+  credentials: "include",
   prepareHeaders: (headers: Headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) {
@@ -31,9 +33,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   DefinitionType
 > = async (args, api, extraOptions): Promise<any> => {
   const result = await baseQuery(args, api, extraOptions);
+
   if (result?.error?.status === 401) {
-    // api.dispatch(logout());
-    // signOut(auth);
+    api.dispatch(clearAuth());
+    auth0Logout();
   }
   if (result?.error?.status === 404) {
     toast.error((result?.error?.data as any)?.message);

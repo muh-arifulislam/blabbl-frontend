@@ -24,15 +24,50 @@ import {
   // useSidebar,
 } from "@/components/ui/sidebar";
 import { NavLink } from "react-router-dom";
-import { useFetchFriendsQuery } from "@/redux/features/user/userApi";
+import {
+  useFetchFriendsQuery,
+  useFetchUserFriendRequestsQuery,
+} from "@/redux/features/user/userApi";
+import ReceiverSkeleton from "./Loader/ReceiverSkeleton";
+import { useEffect, useState } from "react";
+import { IUser } from "@/types/user";
 
 export function NavDocuments() {
   // const { isMobile } = useSidebar();
 
   const { data, isLoading, isFetching } = useFetchFriendsQuery(undefined);
 
-  if (isLoading || isFetching) {
-    return <div>Loading...</div>;
+  const {
+    data: requestedFriendsData,
+    isLoading: isLoading1,
+    isFetching: isFetching1,
+  } = useFetchUserFriendRequestsQuery(undefined);
+
+  const [friends, setFriends] = useState<[] | IUser[]>([]);
+
+  useEffect(() => {
+    if (!isLoading || !isFetching || !isLoading1 || !isFetching1) {
+      const newArray = [
+        ...(data?.data ?? []),
+        ...(requestedFriendsData?.data?.sent ?? []),
+        ...(requestedFriendsData?.data?.received ?? []),
+      ];
+
+      setFriends(newArray);
+    }
+  }, [data, requestedFriendsData]);
+
+  if (isLoading || isFetching || isLoading1 || isFetching1) {
+    return (
+      <div className="space-y-3">
+        <ReceiverSkeleton />
+        <ReceiverSkeleton />
+        <ReceiverSkeleton />
+        <ReceiverSkeleton />
+        <ReceiverSkeleton />
+        <ReceiverSkeleton />
+      </div>
+    );
   }
 
   return (
@@ -42,7 +77,7 @@ export function NavDocuments() {
         <span>All Messages</span>
       </SidebarGroupLabel>
       <SidebarMenu>
-        {data?.data?.map(
+        {friends.map(
           (friend: {
             auth0_id: string;
             _id: string;
@@ -63,12 +98,12 @@ export function NavDocuments() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <h2 className="font-medium">{friend?.name}</h2>
-                        <p className="text-slate-600">10:30AM</p>
+                        <p className="text-slate-600">00:00AM</p>
                       </div>
                       <div className="flex items-center justify-between">
-                        <p>Typing...</p>
+                        <p>Lorem ipsum dolor sit...</p>
                         <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
-                          2
+                          0
                         </span>
                       </div>
                     </div>

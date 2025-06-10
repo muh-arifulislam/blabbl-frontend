@@ -14,12 +14,12 @@ import {
   selectCurrentUser,
 } from "@/redux/features/auth/authSlice";
 import { useGetUserMessagesQuery } from "@/redux/features/message/messageApi";
-import {
-  useFetchFriendsQuery,
-  useGetRecipientQuery,
-} from "@/redux/features/user/userApi";
+import { useGetRecipientQuery } from "@/redux/features/user/userApi";
 import { TMessage } from "@/types";
 import NotConnectedMessage from "../NotConnectedMessage";
+import ChatWindowHeaderLoader from "../Loader/ChatWindowHeaderLoader";
+import useRequestHelper from "@/hooks/useRequestHelper";
+import ChatContentLoader from "../Loader/ChatContentLoader";
 
 const ChatWindow = () => {
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +29,7 @@ const ChatWindow = () => {
   const user = useAppSelector(selectCurrentUser);
   const recipientId = "google-oauth2|".concat(id ?? "");
 
-  const { data: recipient } = useGetRecipientQuery(recipientId);
+  const { data: recipient, isLoading } = useGetRecipientQuery(recipientId);
 
   const { data: chatHistory } = useGetUserMessagesQuery({
     from: userId as string,
@@ -130,11 +130,7 @@ const ChatWindow = () => {
 
   const hasAutoScrolled = useRef(false);
 
-  const { data } = useFetchFriendsQuery(undefined);
-
-  const isFriend = (id: string) => {
-    return data?.data?.includes([id]);
-  };
+  const { friendsIds, isLoading: friendsIsLoading } = useRequestHelper();
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,7 +174,13 @@ const ChatWindow = () => {
   return (
     <>
       <div>
-        <SiteHeader recipient={recipient?.data} />
+        {isLoading ? (
+          <>
+            <ChatWindowHeaderLoader />
+          </>
+        ) : (
+          <SiteHeader recipient={recipient?.data} />
+        )}
       </div>
       <div className="flex-1 flex overflow-hidden">
         <SidebarInset className="flex flex-col w-full">
@@ -186,46 +188,49 @@ const ChatWindow = () => {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Chat Content - scrollable */}
             <main className="flex-1 overflow-y-auto p-4 space-y-8 bg-gray-50">
-              {/* Render Messages Here */}
-
-              {messages.map((msg, i) =>
-                msg.from === userId ? (
-                  <UserMessage
-                    key={i}
-                    data={msg}
-                    picture={user?.picture ?? ""}
-                  />
-                ) : (
-                  <RecipientMessage
-                    key={i}
-                    name={recipient?.data?.name ?? "Recipient"}
-                    data={msg}
-                    picture={
-                      recipient?.data?.picture ??
-                      "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
-                    }
-                  />
-                )
+              {isLoading || friendsIsLoading ? (
+                <ChatContentLoader />
+              ) : (
+                <>
+                  {friendsIds.includes(recipient?.data?._id) &&
+                    messages.map((msg, i) =>
+                      msg.from === userId ? (
+                        <UserMessage
+                          key={i}
+                          data={msg}
+                          picture={user?.picture ?? ""}
+                        />
+                      ) : (
+                        <RecipientMessage
+                          key={i}
+                          name={recipient?.data?.name ?? "Recipient"}
+                          data={msg}
+                          picture={
+                            recipient?.data?.picture ??
+                            "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                          }
+                        />
+                      )
+                    )}
+                  <div>
+                    {!friendsIds.includes(recipient?.data?._id) &&
+                    recipient?.data ? (
+                      <NotConnectedMessage recipient={recipient?.data} />
+                    ) : (
+                      <></>
+                    )}
+                  </div>
+                </>
               )}
-
+              {/* Render Messages End Here */}
               {isRecipientTyping && <p>Typing...</p>}
-
-              <div>
-                {/* {!isFriend(id as string)  && (
-                  <NotConnectedMessage recipient={recipient?.data} />
-                )} */}
-                {!isFriend(id as string) && recipient?.data && (
-                  <NotConnectedMessage recipient={recipient?.data} />
-                )}
-              </div>
-
               <div ref={messageEndRef} />
             </main>
 
             {/* Bottom Bar - fixed at bottom */}
             <div className="h-16 border-t border-gray-200 flex items-center px-4 bg-white gap-2 shrink-0">
               <Input
-                disabled={!isFriend(recipient?._id)}
+                disabled={!friendsIds.includes(recipient?.data?._id)}
                 value={input}
                 onChange={handleTyping}
                 onKeyDown={(e) => {
@@ -240,7 +245,7 @@ const ChatWindow = () => {
               <Mic absoluteStrokeWidth />
               <Paperclip absoluteStrokeWidth />
               <Button
-                disabled={!isFriend(recipient?._id)}
+                disabled={!friendsIds.includes(recipient?.data?._id)}
                 onClick={sendMessage}
               >
                 Send

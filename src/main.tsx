@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import store from "./redux/store.ts";
 import { persistor } from "./redux/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
+import { Toaster } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onRedirectCallback = (appState: any) => {
@@ -34,6 +35,7 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
+          <Toaster />
           <RouterProvider router={router} />
         </PersistGate>
       </Provider>

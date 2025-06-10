@@ -29,6 +29,8 @@ import { useAppSelector } from "@/redux/hooks";
 import { selectCurrentAuthOId } from "@/redux/features/auth/authSlice";
 import { IUser } from "@/types/user";
 import useRequestHelper from "@/hooks/useRequestHelper";
+import { NavLink } from "react-router-dom";
+import { DialogClose } from "./ui/dialog";
 
 export function SearchAutocomplete() {
   const [open, setOpen] = useState(false);
@@ -155,7 +157,15 @@ export function SearchAutocomplete() {
                             }
                             alt=""
                           />
-                          <h2 className="font-semibold">{item.name}</h2>
+                          <DialogClose asChild>
+                            <NavLink
+                              className={"hover:underline"}
+                              onClick={() => setOpen(false)}
+                              to={`/messages/${item?.auth0_id?.split("|")[1]}`}
+                            >
+                              <h2 className="font-semibold">{item.name}</h2>
+                            </NavLink>
+                          </DialogClose>
                         </div>
                         <div className="space-x-3">
                           {isSent(item._id) ? (

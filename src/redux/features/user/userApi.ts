@@ -69,7 +69,7 @@ const userApi = baseApi.injectEndpoints({
         url: `/users/${senderAuth0Id}/accept-friend-request`,
         method: "POST",
       }),
-      invalidatesTags: ["user-friend-requests"],
+      invalidatesTags: ["user-friend-requests", "friends"],
     }),
 
     deleteFriendRequest: builder.mutation({
