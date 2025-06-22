@@ -1,54 +1,78 @@
-# React + TypeScript + Vite
+# Blabbl Inc.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern real time messaging application for the **Blabbl** project.
 
-Currently, two official plugins are available:
+## Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Check out the live site: [https://blabbl.netlify.app/](https://blabbl.netlify.app/)
 
-## Expanding the ESLint configuration
+## Table of Contents
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [Overview](#overview)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Development](#development)
+- [Build](#build)
+- [License](#license)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Overview
+
+**blabbl-frontend** is the user interface for the blabbl platform. It provides a responsive and interactive experience for users.
+
+## Features
+
+- Modern UI built with [React](https://react.dev/) and [shadcn](https://ui.shadcn.com/)
+- Real time chat experience with [Socket.IO](https://socket.io/)
+- REST API integration
+- Authentication and authorization
+- Responsive design
+- State management with [Redux](https://redux.js.org/)
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (18.0.0+ recommended)
+- [npm](https://www.npmjs.com/)
+
+### Installation
+
+```bash
+git clone https://github.com/muh-arifulislam/blabbl-frontend
+cd blabbl-frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+After cloning the project, you need to set up the required environment variables. Create a `.env` file in the root directory and add the following:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```env
+VITE_AUTH0_DOMAIN=your_auth0_domain
+VITE_AUTH0_CLIENT_ID=your_auth0_client
+VITE_AUTH0_AUDIENCE=your_auth0_audience
 ```
+
+## Development
+
+To start the development server:
+
+```bash
+npm run dev
+```
+
+The app will be available at [http://localhost:5173](http://localhost:5173).
+
+## Build
+
+To create a production build:
+
+```bash
+npm run build
+```
+
+The output will be in the `dist/` directory.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
