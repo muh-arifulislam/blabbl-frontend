@@ -16,7 +16,7 @@ import {
   // UsersIcon,
 } from "lucide-react";
 
-import { NavDocuments } from "@/components/nav-documents";
+import { NavUsers } from "@/components/nav-users";
 import { NavMain } from "@/components/nav-main";
 
 import { NavUser } from "@/components/nav-user";
@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="bg-white">
         <NavMain />
-        <NavDocuments />
+        <NavUsers />
       </SidebarContent>
       <SidebarFooter>{user && <NavUser user={user} />}</SidebarFooter>
     </Sidebar>

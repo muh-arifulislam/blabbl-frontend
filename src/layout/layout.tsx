@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 
 const Layout = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider id="app-sidebar">
       <AppSidebar variant="inset" />
       <div className="h-screen flex flex-col w-full">
         <Outlet />

@@ -21,6 +21,7 @@ import {
   // SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
   // useSidebar,
 } from "@/components/ui/sidebar";
 import { NavLink } from "react-router-dom";
@@ -31,9 +32,10 @@ import {
 import ReceiverSkeleton from "./Loader/ReceiverSkeleton";
 import { useEffect, useState } from "react";
 import { IUser } from "@/types/user";
+import userAvatar from "@/assets/user.png";
 
-export function NavDocuments() {
-  // const { isMobile } = useSidebar();
+export function NavUsers() {
+  const { toggleSidebar, isMobile } = useSidebar();
 
   const { data, isLoading, isFetching } = useFetchFriendsQuery(undefined);
 
@@ -89,11 +91,16 @@ export function NavDocuments() {
                 <NavLink
                   to={`/messages/${friend.auth0_id.split("|")[1]}`}
                   className="inline-block w-full h-full"
+                  onClick={() => {
+                    if (isMobile) {
+                      toggleSidebar();
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-x-2">
                     <img
                       className="w-10 h-10 rounded-full overflow-hidden"
-                      src={friend?.picture}
+                      src={friend?.picture ?? userAvatar}
                     />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">

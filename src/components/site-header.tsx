@@ -13,6 +13,8 @@ import { useUnfriendMutation } from "@/redux/features/user/userApi";
 import { useNavigate } from "react-router-dom";
 import useRequestHelper from "@/hooks/useRequestHelper";
 
+import userAvatar from "@/assets/user.png";
+
 type PropsType = {
   recipient: {
     name: string;
@@ -53,10 +55,7 @@ export function SiteHeader({ recipient }: PropsType) {
           <div className="relative">
             <img
               className="w-12 h-12 rounded-full overflow-hidden"
-              src={
-                recipient?.picture ??
-                "https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
-              }
+              src={recipient?.picture ?? userAvatar}
             />
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-blue-400 rounded-full"></div>
           </div>
